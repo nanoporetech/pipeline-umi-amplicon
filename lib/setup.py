@@ -4,7 +4,7 @@ UMI amplicion tools setup script
 Copyright (c) 2020 by Oxford Nanopore Technologies Ltd.
 """
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 __version__ = '1.0.0'
 
@@ -22,7 +22,7 @@ setup(
         'seaborn',
         'edlib'
     ],
-    packages=find_packages(exclude=("tests",)),
+    packages=['umi_amplicon_tools'],
     package_data={
         'umi_amplicon_tools': ['data/*'],
     },
@@ -37,3 +37,4 @@ setup(
         ]
     },
 )
+
