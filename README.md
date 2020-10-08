@@ -39,8 +39,6 @@ $ conda env create -f environment.yml
 $ conda activate pipeline-umi-amplicon
 # Install python packages provided by pipeline-umi-amplicon
 $ pip install lib/
-# install medaka
-$ pip install medaka
 
 # To test if the installation was successful run
 $ snakemake -j 1 -pr --configfile config.yml
