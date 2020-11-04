@@ -116,7 +116,10 @@ rule split_reads:
         bed = target_bed,
         min_overlap = min_overlap
     shell:
-        "umi_filter_reads --min_overlap {params.min_overlap} -o {output.DIR} {params.bed} {input} 2>&1 | tee {output.STATS}"
+        """
+        mkdir -p {output.DIR}
+        umi_filter_reads --min_overlap {params.min_overlap} -o {output.DIR} {params.bed} {input} 2>&1 | tee {output.STATS}
+        """
 
 
 # Map consensus reads after polishing
@@ -224,7 +227,10 @@ rule polish_clusters:
     threads: 30
     shell:
         """
-        rm -rf {output.FOLDER} && medaka smolecule --threads {threads} --length 50 --depth 2 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} 2> {output.BAM}_smolecule.log && cp {output.FOLDER}/consensus.fasta {output.F} && cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM} && cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
+        rm -rf {output.FOLDER}
+        medaka smolecule --threads {threads} --length 50 --depth 2 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} 2> {output.BAM}_smolecule.log
+        cp {output.FOLDER}/consensus.fasta {output.F}
+        cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM} && cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
         """
 
 rule call_variants:
