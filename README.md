@@ -38,7 +38,7 @@ $ conda env create -f environment.yml
 # Activate environment
 $ conda activate pipeline-umi-amplicon
 # Install python packages provided by pipeline-umi-amplicon
-$ pip install lib/
+$ cd lib && pip install . && cd ..
 
 # To test if the installation was successful run
 $ snakemake -j 1 -pr --configfile config.yml
