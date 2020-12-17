@@ -232,10 +232,24 @@ def extract_umis(
                     result_5p_fwd_dist, result_5p_fwd_seq = align(
                         read_5p_seq, pattern_fwd, max_pattern_dist
                     )
+                    result_5p_rev_dist, result_5p_rev_seq = align(
+                        read_5p_seq, pattern_rev, max_pattern_dist
+                    )
+                    if ( not result_5p_fwd_dist and result_5p_rev_dist ) or ( result_5p_fwd_dist and result_5p_rev_dist and result_5p_rev_dist < result_5p_fwd_dist ):
+                       logging.warn("Better match found for 5p end on reverse strand")
+
                     # Extract rev UMI
                     result_3p_rev_dist, result_3p_rev_seq = align(
                         read_3p_seq, pattern_rev, max_pattern_dist
                     )
+                    result_3p_fwd_dist, result_3p_fwd_seq = align(
+                        read_3p_seq, pattern_fwd, max_pattern_dist
+                    )
+                    if ( not result_3p_rev_dist and result_3p_fwd_dist ) or ( result_3p_rev_dist and result_3p_fwd_dist and result_3p_fwd_dist  <result_3p_rev_dist ):
+                        logging.warn("Better match found for 3p end on reverse strand")
+
+                    #print(result_5p_fwd_dist, result_5p_rev_dist)
+                    #print(result_3p_rev_dist, result_3p_fwd_dist)
 
                     if not result_5p_fwd_seq or not result_3p_rev_seq:
                         continue

@@ -53,7 +53,7 @@ balance_strands_param = "--balance_strands"
 if not balance_strands:
     balance_strands_param = ""
 
-minimap2_param = "-ax map-ont -k 13"
+minimap2_param = "-ax splice -k 13 -ub "
 
 print("Targets: {}".format(" ".join(target)), file=sys.stderr)
 
@@ -102,7 +102,7 @@ rule map_1d:
         BAI = "{name}/align/1d.bam.bai"
     threads: 30
     shell:
-        "catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}"
+        "catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools view -b  -F 2304 -q 20 - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}"
 
 
 # Split reads by amplicons
@@ -221,10 +221,10 @@ rule polish_clusters:
         F = "{name}/fasta/{target}_consensus.fasta"
     params:
         medaka_model = mm
-    threads: 30
+    threads: 1
     shell:
         """
-        rm -rf {output.FOLDER} && medaka smolecule --threads {threads} --length 50 --depth 2 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} 2> {output.BAM}_smolecule.log && cp {output.FOLDER}/consensus.fasta {output.F} && cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM} && cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
+        rm -rf {output.FOLDER} && medaka smolecule --threads {threads} --length 50 --depth 1 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} 2> {output.BAM}_smolecule.log && cp {output.FOLDER}/consensus.fasta {output.F} && cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM} && cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
         """
 
 rule call_variants:

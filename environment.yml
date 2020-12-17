@@ -1,10 +1,9 @@
-name: pipeline-umi-amplicon
 channels:
   - defaults
   - bioconda
   - conda-forge
 dependencies:
-  - python==3.6
+  - python
   - snakemake-minimal
   - minimap2
   - samtools
