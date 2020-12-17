@@ -2,6 +2,20 @@
 ******************
 # pipeline-umi-amplicon
 
+# This is a modified pipeline to work with a custom cDNA protocol. This pipeline will not work optimally with data produced according to the official UMI protocol. Please use the latest release or master branch on GitHub.
+
+# How to run the cDNA version of the pipeline
+
+```bash
+# Trim reads using porechope
+$ porechop -t 30 --discard_middle -i input.fastq -o trimmed.fastq
+# Set correct paths in config file and run pipeline
+$ snakemake --snakefile tools/pipeline-umi-amplicon/Snakefile --configfile config_cdna_high_acc_r941.yml -d results/ all --cores 30 -pr
+```
+
+Aligned consensus BAM files can be found in {output_folder}/align/{name}_final.bam
+
+
 ### Overview
 
 `pipeline-umi-amplicon` is a pipeline for generating high accuracy single
