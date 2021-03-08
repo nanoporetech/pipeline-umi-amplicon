@@ -20,15 +20,14 @@ reference_fasta = config.get("reference_fasta")
 if not reference_fasta:
     raise RuntimeError("No reference FASTA found. Please specify 'reference_fasta' in config file")
 
-input_folder = config.get('input_fastq')
-if not input_folder:
+all_samples = config.get('input_fastqs')
+if not all_samples:
     raise RuntimeError("No input FASTQ files found. Please specify 'input_fastq' in config file")
-
 target_bed = config.get('targets_bed')
 if not target_bed:
     raise RuntimeError("No target BED file found. Please spcify 'targets_bed' in config file")
 
-sample_name = config.get("sample_name", "umi_sample")
+sample_names = all_samples.keys()
 
 #########################
 ## Optional parameters ##
@@ -63,22 +62,22 @@ print("Targets: {}".format(" ".join(target)), file=sys.stderr)
 
 rule reads:
     input:
-        expand("{name}/targets.bed", name=sample_name),
-        expand("{name}/align/{target}_final.bam.bai", name=sample_name, target=target),
-        expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_name, target=target),
-        expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_name, target=target)
+        expand("{name}/targets.bed", name=sample_names),
+        expand("{name}/align/{target}_final.bam.bai", name=sample_names, target=target),
+        expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_names, target=target),
+        expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_names, target=target)
 
 rule varaints:
     input:
-        expand("{name}/variants/{target}_final.vcf.gz", name=sample_name, target=target)
+        expand("{name}/variants/{target}_final.vcf.gz", name=sample_names, target=target)
 
 rule all:
     input:
-        expand("{name}/targets.bed", name=sample_name),
-        expand("{name}/align/{target}_final.bam.bai", name=sample_name, target=target),
-        expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_name, target=target), 
-        expand("{name}/variants/{target}_final.vcf.gz", name=sample_name, target=target),
-        expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_name, target=target),
+        expand("{name}/targets.bed", name=sample_names),
+        expand("{name}/align/{target}_final.bam.bai", name=sample_names, target=target),
+        expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_names, target=target), 
+        expand("{name}/variants/{target}_final.vcf.gz", name=sample_names, target=target),
+        expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_names, target=target),
 
 
 rule copy_bed:
@@ -89,20 +88,33 @@ rule copy_bed:
     shell:
         "cp {input} {output}"
 
+rule trim:
+    input:
+        lambda wildcards: all_samples[wildcards.name]
+    output:
+        "{name}/input_fastq_trimmed.fastq"
+    params:
+        read_number = subset_reads,
+    threads: 30
+    shell:
+        """
+        catfishq --max_n {params.read_number} {input} > {output}_tmp
+        porechop -t {threads} --discard_middle -i {output}_tmp -o {output}
+        rm -f {output}_tmp
+        """
 
 rule map_1d:
     input:
-        FQ = input_folder,
-        REF = reference_fasta
+        FQ = "{name}/input_fastq_trimmed.fastq",
+        REF = reference_fasta + "_splie_k13.mmi"
     params:
-        read_number = subset_reads,
         minimap2_param = minimap2_param
     output:
         BAM = "{name}/align/1d.bam",
         BAI = "{name}/align/1d.bam.bai"
     threads: 30
     shell:
-        "catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools view -b  -F 2304 -q 20 - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}"
+        "minimap2 {params.minimap2_param} -t {threads} {input.REF} {input.FQ} | samtools view -b  -F 2304 -q 20 - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}"
 
 
 # Split reads by amplicons
@@ -123,7 +135,7 @@ rule split_reads:
 rule map_consensus:
     input:
         FA = "{name}/fasta/{target}_{type}.fasta",
-        REF = reference_fasta
+        REF = reference_fasta + "_splie_k13.mmi"
     params:
         minimap2_param = minimap2_param
     output:
@@ -224,7 +236,11 @@ rule polish_clusters:
     threads: 1
     shell:
         """
-        rm -rf {output.FOLDER} && medaka smolecule --threads {threads} --length 50 --depth 1 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} 2> {output.BAM}_smolecule.log && cp {output.FOLDER}/consensus.fasta {output.F} && cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM} && cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
+        rm -rf {output.FOLDER}
+        medaka smolecule --threads {threads} --length 50 --depth 1 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} #2> {output.BAM}_smolecule.log
+        cp {output.FOLDER}/consensus.fasta {output.F}
+        cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM}
+        cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
         """
 
 rule call_variants:
