@@ -43,16 +43,14 @@ fwd_context = config.get("fwd_context", "GTATCGTGTAGAGACTGCGTAGG")
 rev_context = config.get("rev_context", "AGTGATCGAGTCAGTGCGAGTG")
 fwd_umi = config.get("fwd_umi", "TTTVVVVTTVVVVTTVVVVTTVVVVTTT")
 rev_umi = config.get("rev_umi", "AAABBBBAABBBBAABBBBAABBBBAAA")
-
+min_length = config.get("min_length", 40)
+max_length = config.get("max_length", 60)
 
 ########################
 ########################
 ########################
 
 target = read_bed_names(target_bed)
-
-min_length = 40
-max_length = 60
 
 balance_strands_param = "--balance_strands"
 if not balance_strands:
