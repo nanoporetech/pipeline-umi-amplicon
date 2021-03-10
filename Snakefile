@@ -155,7 +155,7 @@ rule detect_umi_fasta:
         rev_umi = rev_umi,
     shell:
         """
-        umi_extract --fwd-context fwd_context --rev-context rev_context --fwd-umi fwd_umi --rev-umi rev_umi --max-error {params.errors} {input}/{wildcards.target}.fastq -o {output} --tsv {output}.tsv
+        umi_extract --fwd-context {params.fwd_context} --rev-context {params.rev_context} --fwd-umi {params.fwd_umi} --rev-umi {params.rev_umi} --max-error {params.errors} {input}/{wildcards.target}.fastq -o {output} --tsv {output}.tsv
         """
 
 rule detect_umi_consensus_fasta:
@@ -171,7 +171,7 @@ rule detect_umi_consensus_fasta:
         rev_umi = rev_umi,
     shell:
         """
-        umi_extract --fwd-context fwd_context --rev-context rev_context --fwd-umi fwd_umi --rev-umi rev_umi --max-error {params.errors} {input} -o {output} --tsv {output}.tsv
+        umi_extract --fwd-context {params.fwd_context} --rev-context {params.rev_context} --fwd-umi {params.fwd_umi} --rev-umi {params.rev_umi} --max-error {params.errors} {input} -o {output} --tsv {output}.tsv
         """
 
 rule cluster:
