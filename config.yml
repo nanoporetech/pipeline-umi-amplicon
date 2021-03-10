@@ -33,5 +33,14 @@ balance_strands: True
 # Medaka model used to compute consensus reads
 medaka_model: "r941_min_high_g360"
 
+# Forward tail of primer (Ftail...UMI...primer)
+fwd_context: "GTATCGTGTAGAGACTGCGTAGG"
 
+# Reverse tail of primer (Rtail...UMI...primer)
+rev_context: "AGTGATCGAGTCAGTGCGAGTG"
 
+# Forward UMI (Ftail...UMI...primer)
+fwd_umi: "TTTVVVVTTVVVVTTVVVVTTVVVVTTT"
+
+# Reverse UMI (Rtail...UMI...primer)
+rev_umi: "AAABBBBAABBBBAABBBBAABBBBAAA"
