@@ -44,3 +44,10 @@ fwd_umi: "TTTVVVVTTVVVVTTVVVVTTVVVVTTT"
 
 # Reverse UMI (Rtail...UMI...primer)
 rev_umi: "AAABBBBAABBBBAABBBBAABBBBAAA"
+
+# Minimum combined UMI length
+min_length: 40
+
+# Maximum combined UMI length
+max_length: 60
+
