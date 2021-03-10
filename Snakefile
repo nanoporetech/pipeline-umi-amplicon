@@ -1,4 +1,3 @@
-
 def read_bed_names(filename):
     names = []
     with open(filename) as fh:
@@ -40,14 +39,18 @@ max_reads_per_cluster = config.get("max_reads_per_cluster", 60)
 min_overlap = config.get("min_overlap", 0.9)
 balance_strands = config.get("balance_strands", True)
 mm = config.get("medaka_model", "r941_min_high_g360")
+fwd_context = config.get("fwd_context", "GTATCGTGTAGAGACTGCGTAGG")
+rev_context = config.get("rev_context", "AGTGATCGAGTCAGTGCGAGTG")
+fwd_umi = config.get("fwd_umi", "TTTVVVVTTVVVVTTVVVVTTVVVVTTT")
+rev_umi = config.get("rev_umi", "AAABBBBAABBBBAABBBBAABBBBAAA")
+min_length = config.get("min_length", 40)
+max_length = config.get("max_length", 60)
+
 ########################
 ########################
 ########################
 
 target = read_bed_names(target_bed)
-
-min_length = 40
-max_length = 60
 
 balance_strands_param = "--balance_strands"
 if not balance_strands:
@@ -144,9 +147,13 @@ rule detect_umi_fasta:
         "{name}/fasta_umi/{target}_detected_umis.fasta"
     params:
         errors = allowed_umi_errors,
+        fwd_context = fwd_context,
+        rev_context = rev_context,
+        fwd_umi = fwd_umi,
+        rev_umi = rev_umi,
     shell:
         """
-        umi_extract --max-error {params.errors} {input}/{wildcards.target}.fastq -o {output} --tsv {output}.tsv
+        umi_extract --fwd-context {params.fwd_context} --rev-context {params.rev_context} --fwd-umi {params.fwd_umi} --rev-umi {params.rev_umi} --max-error {params.errors} {input}/{wildcards.target}.fastq -o {output} --tsv {output}.tsv
         """
 
 rule detect_umi_consensus_fasta:
@@ -156,9 +163,13 @@ rule detect_umi_consensus_fasta:
         "{name}/fasta_umi/{target}_detected_umis_final.fasta"
     params:
         errors = allowed_umi_errors,
+        fwd_context = fwd_context,
+        rev_context = rev_context,
+        fwd_umi = fwd_umi,
+        rev_umi = rev_umi,
     shell:
         """
-        umi_extract --max-error {params.errors} {input} -o {output} --tsv {output}.tsv
+        umi_extract --fwd-context {params.fwd_context} --rev-context {params.rev_context} --fwd-umi {params.fwd_umi} --rev-umi {params.rev_umi} --max-error {params.errors} {input} -o {output} --tsv {output}.tsv
         """
 
 rule cluster:
@@ -261,4 +272,3 @@ rule seqkit_bam_acc_tsv:
         """
         echo -e "Read\tCluster_size\tRef\tMapQual\tAcc\tReadLen\tRefLen\tRefAln\tRefCov\tReadAln\tReadCov\tStrand\tMeanQual\tLeftClip\tRightClip\tFlags\tIsSec\tIsSup" > {output} && seqkit bam {input} 2>&1 | sed 's/_/\t/' | tail -n +2 >> {output}
         """
-

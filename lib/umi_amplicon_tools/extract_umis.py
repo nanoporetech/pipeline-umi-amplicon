@@ -89,17 +89,39 @@ def parse_args(argv):
         help="Reverse upstream sequence",
     )
     parser.add_argument(
+        "--fwd-umi",
+        dest="FWD_UMI",
+        type=str,
+        default="TTTVVVVTTVVVVTTVVVVTTVVVVTTT",
+        help="Forward UMI sequence",
+    )
+    parser.add_argument(
+        "--rev-umi",
+        dest="REV_UMI",
+        type=str,
+        default="AAABBBBAABBBBAABBBBAABBBBAAA",
+        help="Reverse UMI sequence",
+    )
+    parser.add_argument(
         "INPUT_FA", type=str, nargs="+", default="/dev/stdin", help="Detected UMIs"
     )
-
+    
     args = parser.parse_args(argv)
 
     return args
 
 
 def align(query, pattern_info, max_ed, normalise=False):
-    pattern, wildcard, equalities, forward = pattern_info
+    pattern, forward = pattern_info
+    
+    # move this somewhere not in a loop
+    seq = pattern
+    for c in 'actgACTG':
+        seq = seq.replace(c, "")
+    wildcard = set(''.join(seq))
 
+    equalities=[("M", "A"), ("M", "C"), ("R", "A"), ("R", "A"), ("W", "A"), ("W", "A"), ("S", "C"), ("S", "C"), ("Y", "C"), ("Y", "C"), ("K", "G"), ("K", "G"), ("V", "A"), ("V", "C"), ("V", "G"), ("H", "A"), ("H", "C"), ("H", "T"), ("D", "A"), ("D", "G"), ("D", "T"), ("B", "C"), ("B", "G"), ("B", "T"), ("N", "G"), ("N", "A"), ("N", "T"), ("N", "C")]
+    
     result = edlib.align(
         pattern,
         query,
@@ -121,7 +143,7 @@ def align(query, pattern_info, max_ed, normalise=False):
     umi = ""
     align = edlib.getNiceAlignment(result, pattern, query)
     for q, t in zip(align["query_aligned"], align["target_aligned"]):
-        if q != wildcard:
+        if q not in wildcard:
             continue
         if t == "-":
             umi += "N"
@@ -304,17 +326,15 @@ def main(argv=sys.argv[1:]):
     output_file = args.OUT
     tsv_file = args.TSV
     input_files = args.INPUT_FA
+    umi_fwd = args.FWD_UMI
+    umi_rev = args.REV_UMI
 
     pattern_fwd = (
-        "TTTVVVVTTVVVVTTVVVVTTVVVVTTT",
-        "V",
-        [("V", "A"), ("V", "G"), ("V", "C")],
+        umi_fwd,
         True,
     )
     pattern_rev = (
-        "AAABBBBAABBBBAABBBBAABBBBAAA",
-        "B",
-        [("B", "T"), ("B", "G"), ("B", "C")],
+        umi_rev,
         False,
     )
 
