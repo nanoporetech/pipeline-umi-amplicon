@@ -114,8 +114,10 @@ def parse_args(argv):
 def align(query, pattern_info, max_ed, normalise=False):
     pattern, forward = pattern_info
     
+    # move this somewhere not in a loop
+    seq = pattern
     for c in 'actgACTG':
-        seq = pattern.replace(c, "")
+        seq = seq.replace(c, "")
     wildcard = set(''.join(seq))
 
     equalities=[("M", "A"), ("M", "C"), ("R", "A"), ("R", "A"), ("W", "A"), ("W", "A"), ("S", "C"), ("S", "C"), ("Y", "C"), ("Y", "C"), ("K", "G"), ("K", "G"), ("V", "A"), ("V", "C"), ("V", "G"), ("H", "A"), ("H", "C"), ("H", "T"), ("D", "A"), ("D", "G"), ("D", "T"), ("B", "C"), ("B", "G"), ("B", "T"), ("N", "G"), ("N", "A"), ("N", "T"), ("N", "C")]
