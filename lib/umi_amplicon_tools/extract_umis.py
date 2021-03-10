@@ -112,7 +112,7 @@ def parse_args(argv):
 
 
 def align(query, pattern_info, max_ed, normalise=False):
-    pattern, wildcard, forward = pattern_info
+    pattern, forward = pattern_info
     
     for c in 'actgACTG':
         seq = pattern.replace(c, "")
