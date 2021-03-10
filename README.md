@@ -108,7 +108,7 @@ These parameters have to be specified to run the pipeline.
 | sample_name | String | Name of the output folder |
 | input_fastq | Absolute file path | FASTQ file or folder containing FASTQ files |
 | reference_fasta | Absolute file path | FASTA file containing the reference genome |
-| target_bed | Absolute file path | BED file containing amplicon coordinates and names |
+| targets_bed | Absolute file path | BED file containing amplicon coordinates and names |
 
 ##### Optional parameters
 
