@@ -7,126 +7,12 @@
 # How to run the cDNA version of the pipeline
 
 ```bash
-# Trim reads using porechope
-$ porechop -t 30 --discard_middle -i input.fastq -o trimmed.fastq
+$ conda env create -n umi-cluster ./environment.yml
+$ conda activae umi-cluster
 # Set correct paths in config file and run pipeline
-$ snakemake --snakefile tools/pipeline-umi-amplicon/Snakefile --configfile config_cdna_high_acc_r941.yml -d results/ all --cores 30 -pr
+$ snakemake --snakefile Snakefile --configfile config_high_acc_r941.yml -d results/ all --cores 30 -pr
 ```
 
-Aligned consensus BAM files can be found in {output_folder}/align/{name}_final.bam
-
-
-### Overview
-
-`pipeline-umi-amplicon` is a pipeline for generating high accuracy single
-molecule reads using unique molecular identifiers (UMIs) from amplicon data.
-The pipeline accepts FASTQ-format sequence files as input and outputs both
-aligned reads and QC stats.
-
-### Features
-
-The pipeline performs the following steps:
-- Reads are mapped to reference genome using minimap2
-- Separate into amplicons
-- Extract UMI sequences for all reads
-- Cluster UMI sequences per amplicon using vsearch and compute high accuracy consensus reads
-- Align high accuracy conesnsus reads and perform simple variant calling (optional)
-
-******************
-# Getting Started
-
-### Requirements
-The following software packages must be installed prior to running:
-
--  [miniconda3](https://conda.io/miniconda.html) - please refer to installation [instructions](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
-
-### Installation
-After installing miniconda3, install the pipeline as follows:
-```bash
-# Get pipeline
-$ git clone https://github.com/nanoporetech/pipeline-umi-amplicon.git 
-# Change to directory
-$ cd pipeline-umi-amplicon
-# Create conda environment with all dependencies
-$ conda env create -f environment.yml
-# Activate environment
-$ conda activate pipeline-umi-amplicon
-# Install python packages provided by pipeline-umi-amplicon
-$ pip install lib/
-
-# To test if the installation was successful run
-$ snakemake -j 1 -pr --configfile config.yml
-# Deactivate environment
-$ conda deactivate
-```
-
-### Input
-
-To run the pipeline the following input files are required:
-
-| Input | Description |
-|-------|-------------|
-| Reference genome | FASTA file containing the reference genome (e.g. GRCh38 for human) |
-| Nanopore reads| Folder containing FASTQ files or a single concatenated FASTQ file. Reads should be **q-score filtered**|
-| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons|
-
-# BED format
-Tab separated and needs a unique name:
-```
-chr1    107167322       107168239       target_a_chr1_107167756_T_C
-```
-
-### Output
-
- The main output files created by the pipeline are:
-
-| Output | Description |
-|--------|-------------|
-| Aligned reads | Aligned reads in indexed and sorted BAM format |
-| Variant calls (optional) | Called variants in VCF format |
-
-After the a pipeline analysis has completed, the aligned reads can be found at `{output_folder}/{run_name}/align/{amplicon_name}_final.bam` e.g. `example_egfr_single_read_run/align/EGFR_917_final.bam`.
-
-### Usage:
-
-To run the pipeline with default settings invoke snakemake as follows.
-
-```bash
-$ snakemake -j 30 reads --configfile config.yml
-```
-
-`-j` specifies how many CPU cores will be used by the pipeline. `reads` is the default target (see Targets); this will run all steps required to produce aligned high accuracy consensus reads. Please see the example config files for the required parameters.
-
-### Targets
-
-|Name| Description |
-|--|--|
-| reads | Only prodcues high accuracy consensus and align them to the reference |
-| variants | Same as `reads` + calls variants using `varscan2` |
-
-### Options
-
-The pipeline accepts several input parameters. They can either be changed in the `config.yml` file or specified when running snakemake.
-
-For example:
-```bash
-snakemake -j 30 reads --config input_fastq=/data/pass/ reference_fasta=/ref/hg19.fasta
-```
-
-##### Required parameters
-
-These parameters have to be specified to run the pipeline.
-
-| Parameter | Allowed | Description |
-|-----------|---------|-------------|
-| sample_name | String | Name of the output folder |
-| input_fastq | Absolute file path | FASTQ file or folder containing FASTQ files |
-| reference_fasta | Absolute file path | FASTA file containing the reference genome |
-| target_bed | Absolute file path | BED file containing amplicon coordinates and names |
-
-##### Optional parameters
-
-See `config.yml`
 
 ******************
 # Help

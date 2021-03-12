@@ -72,10 +72,6 @@ def parse_args(argv):
     )
 
     parser.add_argument(
-        "-o", "--output", dest="OUTPUT", default="clusters_fa/", help="Output folder"
-    )
-
-    parser.add_argument(
         "--stats_out",
         dest="STATS_OUT",
         default="/dev/null",
@@ -83,9 +79,9 @@ def parse_args(argv):
     )
 
     parser.add_argument(
-        "--smolecule_out",
+        "-o", "--output",
         dest="SMOLECULE_OUT",
-        default="/dev/null",
+        required=True,
         help="Input file for medaka smolecule",
     )
 
@@ -106,7 +102,6 @@ def polish_cluster(
     id_cluster,
     n_cluster,
     cluster_folder,
-    output_folder,
     min_reads=0,
     max_reads=10000000,
     stats_out=sys.stdout,
@@ -114,9 +109,6 @@ def polish_cluster(
     smolecule_out=None,
     cons_umi=None,
 ):
-
-    if not os.path.exists(output_folder):
-        os.mkdir(output_folder)
 
     reads_found = 0
     reads_written = 0
@@ -128,8 +120,6 @@ def polish_cluster(
     n_rev = 0
     reads_skipped = 0
     cluster_written = 0
-
-    cluster_filename = os.path.join(output_folder, "cluster{}.fasta".format(id_cluster))
 
     reads_fwd = {}
     reads_rev = {}
@@ -188,49 +178,42 @@ def polish_cluster(
 
     logging.debug(
         "Cluster: {} has {}/{} fwd and {}/{} rev reads ({} skipped)".format(
-            cluster_filename, n_fwd, max_fwd, n_rev, max_rev, reads_skipped
+            id_cluster, n_fwd, max_fwd, n_rev, max_rev, reads_skipped
         )
     )
 
     if n_fwd >= min_fwd and n_rev >= min_rev and n_reads >= min_reads:
 
-        with open(cluster_filename, "w") as out:
-            for entry in list(reads_fwd.values()) + list(reads_rev.values()):
-                cols = entry.name.split(";")
-                strand = "+"
-                read_seq = entry.sequence
-                # print(cols)
-                if len(cols) > 6:
-                    strand = cols[1].split("=")[1]
-                    read_seq = cols[6].split("=")[1]
-                read_id = cols[0]
+        for entry in list(reads_fwd.values()) + list(reads_rev.values()):
+            cols = entry.name.split(";")
+            strand = "+"
+            read_seq = entry.sequence
+            # print(cols)
+            if len(cols) > 6:
+                strand = cols[1].split("=")[1]
+                read_seq = cols[6].split("=")[1]
+            read_id = cols[0]
 
-                if strand == "+":
-                    if max_fwd > 0:
-                        print(">{}".format(read_id), file=out)
-                        print("{}".format(read_seq), file=out)
-                        if smolecule_out:
-                            print(
-                                ">{}_{}".format(id_cluster, reads_written),
-                                file=smolecule_out,
-                            )
-                            print("{}".format(read_seq), file=smolecule_out)
-                        reads_written += 1
-                        max_fwd -= 1
-                        reads_written_fwd += 1
-                else:
-                    if max_rev > 0:
-                        print(">{}".format(read_id), file=out)
-                        print("{}".format(read_seq), file=out)
-                        if smolecule_out:
-                            print(
-                                ">{}_{}".format(id_cluster, reads_written),
-                                file=smolecule_out,
-                            )
-                            print("{}".format(read_seq), file=smolecule_out)
-                        reads_written += 1
-                        max_rev -= 1
-                        reads_written_rev += 1
+            if strand == "+":
+                if max_fwd > 0:
+                    print(
+                        ">{}_{} {}".format(id_cluster, reads_written, n_reads),
+                        file=smolecule_out,
+                    )
+                    print("{}".format(read_seq), file=smolecule_out)
+                    reads_written += 1
+                    max_fwd -= 1
+                    reads_written_fwd += 1
+            else:
+                if max_rev > 0:
+                    print(
+                        ">{}_{} {}".format(id_cluster, reads_written, n_reads),
+                        file=smolecule_out,
+                    )
+                    print("{}".format(read_seq), file=smolecule_out)
+                    reads_written += 1
+                    max_rev -= 1
+                    reads_written_rev += 1
 
             cluster_written = 1
             reads_written_clusters += reads_found
@@ -239,7 +222,7 @@ def polish_cluster(
 
     logging.debug(
         "Cluster: {} has {} reads written: {} fwd - {} rev".format(
-            cluster_filename, reads_written, reads_written_fwd, reads_written_rev
+            id_cluster, reads_written, reads_written_fwd, reads_written_rev
         )
     )
 
@@ -317,7 +300,6 @@ def parse_clusters(args):
                         id_cluster,
                         n_cluster,
                         args.VSEARCH_FOLDER[0],
-                        args.OUTPUT,
                         min_read_per_cluster,
                         max_read_per_cluster,
                         stats_out,

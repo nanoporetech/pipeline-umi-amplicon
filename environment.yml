@@ -3,15 +3,14 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - python
+  - python=3.6
   - snakemake-minimal
+  - vsearch
   - minimap2
   - samtools
-  - seqkit
-  - pysam
-  - vsearch
-  - varscan
-  - medaka>=1.1.2
+  - tabix
+  - porechop
   - pip
   - pip:
     - catfishq
+    - medaka==1.1.3
