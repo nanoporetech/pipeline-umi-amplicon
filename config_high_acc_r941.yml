@@ -1,0 +1,18 @@
+# Input FASTQ files. Can be a (zipped) FASTQ file or a folder containing (zipped) FASTQ files
+input_fastqs:
+  HLA_A: "HLA_A_UMI.fastq"
+  HLA_B: "HLA_B_UMI.fastq"
+  HLA_C: "HLA_C_UMI.fastq"
+  HLA_DPB1: "DPB1_UMI.fastq"
+  HLA_DQA1: "DQA1_UMI.fastq"
+  HLA_DQB1: "DQB1_UMI.fastq"
+  HLA_DRB1: "HLA_DRB1_UMI.fastq"
+
+# Min number of reads required for a consensus read
+min_reads_per_cluster: 10
+
+# Balance forward and reverse 1D reads in clusters
+balance_strands: False
+
+# Medaka model used to compute consensus reads
+medaka_model: "r941_min_high_g360"
