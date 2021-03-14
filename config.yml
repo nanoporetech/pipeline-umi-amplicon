@@ -39,10 +39,10 @@ fwd_context: "GTATCGTGTAGAGACTGCGTAGG"
 # Reverse tail of primer (Rtail...UMI...primer)
 rev_context: "AGTGATCGAGTCAGTGCGAGTG"
 
-# Forward UMI (Ftail...UMI...primer)
+# Forward UMI (Ftail...UMI...primer) The inside sequence can be appended to the UMI sequence to increase specificity, e.g. UMI then 4bases of primer: TTTVVVVTTVVVVTTVVVVTTVVVVTTTaggt
 fwd_umi: "TTTVVVVTTVVVVTTVVVVTTVVVVTTT"
 
-# Reverse UMI (Rtail...UMI...primer)
+# Reverse UMI (Rtail...UMI...primer) The inside sequence can be appended to the UMI sequence to increase specificity, e.g. UMI then 4bases of primer: TTTVVVVTTVVVVTTVVVVTTVVVVTTTaggt
 rev_umi: "AAABBBBAABBBBAABBBBAABBBBAAA"
 
 # Minimum combined UMI length
