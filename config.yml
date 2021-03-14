@@ -51,3 +51,14 @@ min_length: 40
 # Maximum combined UMI length
 max_length: 60
 
+# should the fastq reads be length and quality filtered?
+filter_reads: False
+
+# fastq min read length (if filter_reads is set to true)
+min_read_len: 100
+
+# fastq min mean read quality score (if filter_reads is set to true)
+min_mean_qual: 70
+
+
+
