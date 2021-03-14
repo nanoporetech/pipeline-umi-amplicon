@@ -53,8 +53,8 @@ To run the pipeline the following input files are required:
 | Input | Description |
 |-------|-------------|
 | Reference genome | FASTA file containing the reference genome (e.g. GRCh38 for human) |
-| Nanopore reads| Folder containing FASTQ files or a single concatenated FASTQ file. Reads should be **q-score filtered**|
-| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons|
+| Nanopore reads | Folder containing FASTQ files or a single concatenated FASTQ file. |
+| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons |
 
 # BED format
 Tab separated and needs a unique name:
