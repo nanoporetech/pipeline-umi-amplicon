@@ -105,7 +105,7 @@ rule filter_reads:
         filter_reads = filter_reads
     output:
         FQout = "{name}/read.filt.fastq.gz",
-        STATS = "{name}/stats/umi_filter_reads_stats.txt"
+        STATS = "{name}/stats/reads_stats.txt"
     threads: 1
     if params.filter_reads:
         shell:
