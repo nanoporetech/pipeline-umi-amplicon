@@ -45,6 +45,9 @@ fwd_umi = config.get("fwd_umi", "TTTVVVVTTVVVVTTVVVVTTVVVVTTT")
 rev_umi = config.get("rev_umi", "AAABBBBAABBBBAABBBBAABBBBAAA")
 min_length = config.get("min_length", 40)
 max_length = config.get("max_length", 60)
+filter_reads = config.get("filter_reads", False)
+min_read_len = config.get("min_read_len", 100)
+min_mean_qual = config.get("min_mean_qual", 70)
 
 ########################
 ########################
@@ -92,10 +95,36 @@ rule copy_bed:
     shell:
         "cp {input} {output}"
 
+rule filter_reads:
+    input:
+        FQ = input_folder,
+    params:
+        min_read_len = min_read_len,
+        min_mean_qual = min_mean_qual,
+        filter_reads = filter_reads,
+    output:
+        FQout = "{name}/read.filt.fastq.gz",
+    threads: 1
+    if params.filter_reads:
+        shell:
+        """
+        printf 'Total reads in file pre filtering: '
+        zcat {input.FQ} | echo $((`wc -l`/4))
+        filtlong --min_length {params.min_read_len} --min_mean_q {params.min_mean_qual} {input.FQ} | gzip > {input.FQout}
+        printf 'Total reads in file post filtering: '
+        zcat {input.FQout} | echo $((`wc -l`/4))
+        """
+    else:
+        shell:
+        """
+        printf 'Total reads in file pre filtering: '
+        zcat {input.FQ} | echo $((`wc -l`/4))
+        cp {input.FQ} {input.FQout}
+        """
 
 rule map_1d:
     input:
-        FQ = input_folder,
+        FQ = "{name}/read.filt.fastq.gz",
         REF = reference_fasta
     params:
         read_number = subset_reads,
