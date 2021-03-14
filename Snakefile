@@ -48,6 +48,7 @@ max_length = config.get("max_length", 60)
 filter_reads = config.get("filter_reads", False)
 min_read_len = config.get("min_read_len", 100)
 min_mean_qual = config.get("min_mean_qual", 70)
+varscan_params = config.get("varscan_params", '--variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq 0.01 --strand-filter 0 --p-value 1 --min-reads2 2')
 
 ########################
 ########################
@@ -97,13 +98,13 @@ rule copy_bed:
 
 rule filter_reads:
     input:
-        FQ = input_folder,
+        FQ = input_folder
     params:
         min_read_len = min_read_len,
         min_mean_qual = min_mean_qual,
-        filter_reads = filter_reads,
+        filter_reads = filter_reads
     output:
-        FQout = "{name}/read.filt.fastq.gz",
+        FQout = "{name}/read.filt.fastq.gz"
     threads: 1
     if params.filter_reads:
         shell:
@@ -280,9 +281,9 @@ rule call_variants:
     output:
         "{name}/variants/{target}_{type}.vcf"
     params:
-        min_freq = 0.01
+        varscan_params = varscan_params
     shell:
-        "samtools mpileup -q 0 -Q 0 -B -d 10000000 -A -f {input.REF} {input.BAM} | varscan mpileup2cns --variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq {params.min_freq} --strand-filter 0 --p-value 1 --min-reads2 2 > {output}"
+        "samtools mpileup -q 0 -Q 0 -B -d 10000000 -A -f {input.REF} {input.BAM} | varscan mpileup2cns {params.varscan_params} > {output}"
 
 rule index_variants:
     input:
