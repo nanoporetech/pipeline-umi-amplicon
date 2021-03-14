@@ -104,24 +104,27 @@ rule filter_reads:
         min_mean_qual = min_mean_qual,
         filter_reads = filter_reads
     output:
-        FQout = "{name}/read.filt.fastq.gz",
+        FQ = "{name}/read.filt.fastq.gz",
         STATS = "{name}/stats/reads_stats.txt"
     threads: 1
-    if params.filter_reads:
-        shell:
+    shell:
         """
         printf 'Total reads in file pre filtering: ' 2>&1 | tee {output.STATS}
-        zcat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
-        filtlong --min_length {params.min_read_len} --min_mean_q {params.min_mean_qual} {input.FQ} | gzip > {input.FQout}
-        printf 'Total reads in file post filtering: ' 2>&1 | tee {output.STATS}
-        zcat {input.FQout} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
-        """
-    else:
-        shell:
-        """
-        printf 'Total reads in file pre filtering: ' 2>&1 | tee {output.STATS}
-        zcat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
-        cp {input.FQ} {input.FQout}
+        if [[ {input.FQ} =~ \.gz$ ]]
+        then
+            zcat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        else
+            cat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        fi
+        
+        if [[ {params.filter_reads} == "True" ]]
+        then
+            filtlong --min_length {params.min_read_len} --min_mean_q {params.min_mean_qual} {input.FQ} | gzip > {output.FQ}
+            printf 'Total reads in file post filtering: ' 2>&1 | tee {output.STATS}
+            zcat {output.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        else
+            cp {input.FQ} {output.FQ}
+        fi
         """
 
 rule map_1d:
