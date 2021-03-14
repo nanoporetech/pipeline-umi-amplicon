@@ -60,5 +60,7 @@ min_read_len: 100
 # fastq min mean read quality score (if filter_reads is set to true)
 min_mean_qual: 70
 
+# Variant filtering options for varscan
+varscan_params: '--variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq 0.01 --strand-filter 0 --p-value 1 --min-reads2 2'
 
 
