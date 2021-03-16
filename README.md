@@ -9,6 +9,7 @@
 ```bash
 $ conda env create -n umi-cluster ./environment.yml
 $ conda activae umi-cluster
+$ pip install lib/ # Only required when run for the first time
 # Set correct paths in config file and run pipeline
 $ snakemake --snakefile Snakefile --configfile config_high_acc_r941.yml -d results/ all --cores 30 -pr
 ```
