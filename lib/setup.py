@@ -20,7 +20,8 @@ setup(
         'numpy',
         'pandas',
         'seaborn',
-        'edlib'
+        'edlib',
+        'Bio'
     ],
     packages=['umi_amplicon_tools'],
     package_data={
