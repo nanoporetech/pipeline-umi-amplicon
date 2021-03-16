@@ -14,6 +14,7 @@ dependencies:
   - varscan
   - medaka==1.1.3
   - filtlong
+  – Bio.Seq
   - pip
   - pip:
     - catfishq
