@@ -21,7 +21,7 @@ setup(
         'pandas',
         'seaborn',
         'edlib',
-        'Bio'
+        'biopython'
     ],
     packages=['umi_amplicon_tools'],
     package_data={
