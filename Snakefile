@@ -45,6 +45,10 @@ fwd_umi = config.get("fwd_umi", "TTTVVVVTTVVVVTTVVVVTTVVVVTTT")
 rev_umi = config.get("rev_umi", "AAABBBBAABBBBAABBBBAABBBBAAA")
 min_length = config.get("min_length", 40)
 max_length = config.get("max_length", 60)
+filter_reads = config.get("filter_reads", False)
+min_read_len = config.get("min_read_len", 100)
+min_mean_qual = config.get("min_mean_qual", 70)
+varscan_params = config.get("varscan_params", '--variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq 0.01 --strand-filter 0 --p-value 1 --min-reads2 2')
 
 ########################
 ########################
@@ -92,10 +96,40 @@ rule copy_bed:
     shell:
         "cp {input} {output}"
 
+rule filter_reads:
+    input:
+        FQ = input_folder
+    params:
+        min_read_len = min_read_len,
+        min_mean_qual = min_mean_qual,
+        filter_reads = filter_reads
+    output:
+        FQ = "{name}/read.filt.fastq.gz",
+        STATS = "{name}/stats/reads_stats.txt"
+    threads: 1
+    shell:
+        """
+        printf 'Total reads in file pre filtering: ' 2>&1 | tee {output.STATS}
+        if [[ {input.FQ} =~ \.gz$ ]]
+        then
+            zcat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        else
+            cat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        fi
+        
+        if [[ {params.filter_reads} == "True" ]]
+        then
+            filtlong --min_length {params.min_read_len} --min_mean_q {params.min_mean_qual} {input.FQ} | gzip > {output.FQ}
+            printf 'Total reads in file post filtering: ' 2>&1 | tee {output.STATS}
+            zcat {output.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        else
+            cp {input.FQ} {output.FQ}
+        fi
+        """
 
 rule map_1d:
     input:
-        FQ = input_folder,
+        FQ = "{name}/read.filt.fastq.gz",
         REF = reference_fasta
     params:
         read_number = subset_reads,
@@ -105,8 +139,10 @@ rule map_1d:
         BAI = "{name}/align/1d.bam.bai"
     threads: 30
     shell:
-        "catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}"
-
+        """
+        catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}
+        rm {input.FQ} #because this is a copy now
+        """
 
 # Split reads by amplicons
 rule split_reads:
@@ -251,9 +287,9 @@ rule call_variants:
     output:
         "{name}/variants/{target}_{type}.vcf"
     params:
-        min_freq = 0.01
+        varscan_params = varscan_params
     shell:
-        "samtools mpileup -q 0 -Q 0 -B -d 10000000 -A -f {input.REF} {input.BAM} | varscan mpileup2cns --variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq {params.min_freq} --strand-filter 0 --p-value 1 --min-reads2 2 > {output}"
+        "samtools mpileup -q 0 -Q 0 -B -d 10000000 -A -f {input.REF} {input.BAM} | varscan mpileup2cns {params.varscan_params} > {output}"
 
 rule index_variants:
     input:

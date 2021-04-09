@@ -53,8 +53,8 @@ To run the pipeline the following input files are required:
 | Input | Description |
 |-------|-------------|
 | Reference genome | FASTA file containing the reference genome (e.g. GRCh38 for human) |
-| Nanopore reads| Folder containing FASTQ files or a single concatenated FASTQ file. Reads should be **q-score filtered**|
-| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons|
+| Nanopore reads | Folder containing FASTQ files or a single concatenated FASTQ file. |
+| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons |
 
 # BED format
 Tab separated and needs a unique name:
@@ -140,3 +140,14 @@ implemented by forking and pull requests. However much as we would like to
 rectify every issue and piece of feedback users may have, the developers may
 have limited resource for support of this software. Research releases may be
 unstable and subject to rapid iteration by Oxford Nanopore Technologies.
+
+
+### TODO
+
+- Number of reads collapsed in the header of the bam file
+- Check that balance reads is working as its meant to
+
+Done
+- I added a fastq filter options (min read length and average quality) using filtlong
+- The user can also now pass options to the variant calling using the config file
+- It runs as before when in defaults mode
