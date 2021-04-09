@@ -144,10 +144,10 @@ unstable and subject to rapid iteration by Oxford Nanopore Technologies.
 
 ### TODO
 
-Number of reads collapsed in the header of the bam file
-Check that balance reads is working as its meant to
+- Number of reads collapsed in the header of the bam file
+- Check that balance reads is working as its meant to
 
 Done
-I added a fastq filter options (min read length and average quality) using filtlong
-The user can also now pass options to the variant calling using the config file
-It runs as before when in defaults mode
+- I added a fastq filter options (min read length and average quality) using filtlong
+- The user can also now pass options to the variant calling using the config file
+- It runs as before when in defaults mode
