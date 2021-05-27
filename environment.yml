@@ -4,7 +4,7 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - python>=3.6
+  - python==3.6
   - snakemake-minimal
   - minimap2
   - samtools
