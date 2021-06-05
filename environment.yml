@@ -12,6 +12,7 @@ dependencies:
   - pysam
   - vsearch
   - varscan
+  - numpy==1.17
   - medaka==1.1.3
   - filtlong
   - pip
