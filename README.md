@@ -146,6 +146,8 @@ unstable and subject to rapid iteration by Oxford Nanopore Technologies.
 
 - Number of reads collapsed in the header of the bam file
 - Check that balance reads is working as its meant to
+- Add handling of errors if no reads aligned to a reference
+- Add stats output and plots, number of umis, umi distribution, snps plot umi vs raw, read alignment stats
 
 Done
 - I added a fastq filter options (min read length and average quality) using filtlong
