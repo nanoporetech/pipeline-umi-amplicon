@@ -3,7 +3,9 @@
 ########################
 ### FIXED PARAMETERS ###
 ########################
-all_samples = config.get('input_fastqs')
+all_samples = {
+    'ALL': config.get('input_fastqs')
+}
 if not all_samples:
     raise RuntimeError("No input FASTQ files found. Please specify 'input_fastqs' in config file")
 
@@ -11,11 +13,11 @@ if not all_samples:
 ## Optional parameters ##
 #########################
 allowed_umi_errors = config.get("umi_errors", 3)
-subset_reads = config.get("downsample_to", 0)
+subset_reads = config.get("downsample_to", 1)
 min_reads_per_cluster = config.get("min_reads_per_cluster", 20)
 max_reads_per_cluster = config.get("max_reads_per_cluster", 60)
-balance_strands = config.get("balance_strands", True)
-mm = config.get("medaka_model", "r941_min_high_g360")
+balance_strands = config.get("balance_strands", False)
+mm = config.get("medaka_model", "r103_min_high_g360")
 ########################
 ########################
 ########################
@@ -39,6 +41,9 @@ rule all:
     input:
         expand("{name}_trimmed_umi_consensus_min{min}.fasta", name=sample_names, min=min_reads_per_cluster)
 
+rule pair:
+    input:
+        expand("tmp/{name}_clustering/smolecule_clusters_min{min}.fa", name=sample_names, min=min_reads_per_cluster)
 
 rule trim:
     input:
@@ -46,20 +51,20 @@ rule trim:
     output:
         "{name}_trimmed.fastq"
     params:
-        read_number = subset_reads,
+        downsample_prop = subset_reads,
     threads: 10
     shell:
         """
-        catfishq --max_n {params.read_number} {input} > {output}_tmp
+        seqkit sample -n {params.downsample_prop} {input} > {output}_tmp
         porechop -t {threads} --discard_middle -i {output}_tmp -o {output}
         rm -f {output}_tmp
         """
-
+# catfishq -r --max_n {params.read_number} {input} > {output}_tmp
 rule detect_umi_fasta:
     input:
         "{name}_trimmed.fastq"
     output:
-        "tmp/{name}_trimmed_detected_umis.fasta"
+        temp("tmp/{name}_trimmed_detected_umis.fasta")
     params:
         errors = allowed_umi_errors,
     shell:
@@ -71,7 +76,7 @@ rule detect_umi_consensus_fasta:
     input:
         "tmp/{name}_trimmed_umi_pre-consensus_min{min}.fasta"
     output:
-        "tmp/{name}_trimmed_umi_pre-consensus_detected_umi_min{min}.fasta"
+        temp("tmp/{name}_trimmed_umi_pre-consensus_detected_umi_min{min}.fasta")
     params:
         errors = allowed_umi_errors,
     shell:
@@ -82,9 +87,9 @@ rule detect_umi_consensus_fasta:
 rule cluster:
     input: "tmp/{name}_trimmed_detected_umis.fasta"
     output:
-        CENT = "tmp/{name}_clustering/clusters_centroid.fasta",
-        CONS = "tmp/{name}_clustering/clusters_consensus.fasta",
-        DIR = directory("tmp/{name}_clustering/vsearch_clusters")
+        CENT = temp("tmp/{name}_clustering/clusters_centroid.fasta"),
+        CONS = temp("tmp/{name}_clustering/clusters_consensus.fasta"),
+        DIR = temp(directory("tmp/{name}_clustering/vsearch_clusters"))
     params:
         min_length = min_length,
         max_length = max_length
@@ -96,9 +101,9 @@ rule cluster:
 rule cluster_consensus:
     input: "tmp/{name}_trimmed_umi_pre-consensus_detected_umi_min{min}.fasta"
     output:
-        CENT = "tmp/{name}_clustering_pre-consensus_min{min}/clusters_centroid.fasta",
-        CONS = "tmp/{name}_clustering_pre-consensus_min{min}/clusters_consensus.fasta",
-        DIR = directory("tmp/{name}_clustering_pre-consensus_min{min}/vsearch_clusters")
+        CENT = temp("tmp/{name}_clustering_pre-consensus_min{min}/clusters_centroid.fasta"),
+        CONS = temp("tmp/{name}_clustering_pre-consensus_min{min}/clusters_consensus.fasta"),
+        DIR = temp(directory("tmp/{name}_clustering_pre-consensus_min{min}/vsearch_clusters"))
     params:
         min_length = min_length,
         max_length = max_length
@@ -134,7 +139,7 @@ rule reformat_filter_clusters:
         balance_strands_param = balance_strands_param
     output:
         stats = "{name}_trimmed_umi_cluster_stats_min{min}.tsv",
-        out_file = "tmp/{name}_clustering/smolecule_clusters_min{min}.fa"
+        out_file = temp("tmp/{name}_clustering/smolecule_clusters_min{min}.fa")
     shell:
         "umi_parse_clusters -o {output.out_file} {params.balance_strands_param} --min_reads_per_clusters {params.min_reads_per_cluster} --max_reads_per_clusters {params.max_reads_per_cluster} --stats_out {output.stats} {input}"
 
@@ -143,17 +148,17 @@ rule polish_clusters:
     input:
         "tmp/{name}_clustering/smolecule_clusters_min{min}.fa"
     output:
-        "tmp/{name}_trimmed_umi_pre-consensus_min{min}.fasta"
+        temp("tmp/{name}_trimmed_umi_pre-consensus_min{min}.fasta")
     params:
         medaka_model = mm,
         FOLDER = "tmp/{name}_consensus_tmp_min{min}"
-    threads: 1
+    threads: 30
     shell:
         """
         rm -rf {params.FOLDER}
         if [ -s {input} ]
         then
-            medaka smolecule --threads {threads} --length 50 --depth 1 --model {params.medaka_model} --method spoa {input} {params.FOLDER}
+            medaka smolecule --threads {threads} --length 50 --depth 1 --model {params.medaka_model} --batch_size 10000 --method spoa {input} {params.FOLDER}
             cp {params.FOLDER}/consensus.fasta {output}
         else
             touch {output}
