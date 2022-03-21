@@ -16,3 +16,4 @@ dependencies:
   - pip
   - pip:
     - catfishq
+    - numpy==1.19.5
