@@ -96,7 +96,7 @@ The pipeline accepts several input parameters. They can either be changed in the
 
 For example:
 ```bash
-snakemake -j 30 reads --config input_fastq=/data/pass/ reference_fasta=/ref/hg19.fasta
+snakemake -j 30 reads --config input_fastq=data reference_fasta=data/example_egfr_reference.fasta targets_bed=data/example_egfr_amplicon.bed
 ```
 
 ##### Required parameters
