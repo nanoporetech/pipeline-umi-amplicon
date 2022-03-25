@@ -10,6 +10,7 @@ dependencies:
   - samtools
   - seqkit
   - pysam
+  - bedtools
   - vsearch
   - varscan
   - medaka==1.1.3
