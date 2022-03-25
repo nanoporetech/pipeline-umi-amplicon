@@ -71,7 +71,7 @@ rule reads:
         expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_name, target=target),
         expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_name, target=target)
 
-rule varaints:
+rule variants:
     input:
         expand("{name}/variants/{target}_final.vcf.gz", name=sample_name, target=target)
 
