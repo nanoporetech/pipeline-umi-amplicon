@@ -52,7 +52,7 @@ def parse_args(argv):
     )
 
     parser.add_argument(
-        "-t", "--theads", dest="THREADS", type=int, default=1, help="Number of threads."
+        "-t", "--threads", dest="THREADS", type=int, default=1, help="Number of threads."
     )
 
     parser.add_argument(
