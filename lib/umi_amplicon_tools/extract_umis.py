@@ -66,7 +66,7 @@ def parse_args(argv):
         help="Length of adapter",
     )
     parser.add_argument(
-        "-t", "--theads", dest="THREADS", type=int, default=1, help="Number of threads."
+        "-t", "--threads", dest="THREADS", type=int, default=1, help="Number of threads."
     )
     parser.add_argument(
         "--tsv", dest="TSV", type=str, required=False, help="TSV output file"
