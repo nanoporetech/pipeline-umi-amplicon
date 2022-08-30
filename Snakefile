@@ -219,7 +219,7 @@ rule cluster:
         max_length = max_length
     threads: 10
     shell:
-        "mkdir -p {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 --qmask none -id 0.85"
+        "mkdir -p {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 -id 0.85"
 
 
 rule cluster_consensus:
@@ -233,7 +233,7 @@ rule cluster_consensus:
         max_length = max_length
     threads: 10
     shell:
-        " mkdir -p {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 --qmask none -id 0.85"
+        " mkdir -p {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 -id 0.85"
 
 
 rule reformat_consensus_clusters:
