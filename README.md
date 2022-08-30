@@ -30,20 +30,21 @@ The following software packages must be installed prior to running:
 After installing miniconda3, install the pipeline as follows:
 ```bash
 # Get pipeline
-$ git clone https://github.com/nanoporetech/pipeline-umi-amplicon.git 
+# git clone https://github.com/nanoporetech/pipeline-umi-amplicon.git 
+https://github.com/SemiQuant/pipeline-umi-amplicon.git
 # Change to directory
-$ cd pipeline-umi-amplicon
+cd pipeline-umi-amplicon
 # Create conda environment with all dependencies
-$ conda env create -f environment.yml
+conda env create -f environment.yml
 # Activate environment
-$ conda activate pipeline-umi-amplicon
+conda activate pipeline-umi-amplicon
 # Install python packages provided by pipeline-umi-amplicon
-$ cd lib && pip install . && cd ..
+cd lib && pip install . && cd ..
 
 # To test if the installation was successful run
-$ snakemake -j 1 -pr --configfile config.yml
+snakemake -j 1 -pr --configfile config.yml
 # Deactivate environment
-$ conda deactivate
+conda deactivate
 ```
 
 ### Input
