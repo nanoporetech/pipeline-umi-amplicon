@@ -31,7 +31,7 @@ After installing miniconda3, install the pipeline as follows:
 ```bash
 # Get pipeline
 # git clone https://github.com/nanoporetech/pipeline-umi-amplicon.git 
-https://github.com/SemiQuant/pipeline-umi-amplicon.git
+git clone https://github.com/SemiQuant/pipeline-umi-amplicon.git
 # Change to directory
 cd pipeline-umi-amplicon
 # Create conda environment with all dependencies
