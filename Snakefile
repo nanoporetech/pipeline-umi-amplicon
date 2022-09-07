@@ -86,9 +86,8 @@ rule all:
         expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_name, target=target), 
         expand("{name}/variants/{target}_final.vcf.gz", name=sample_name, target=target),
         expand("{name}/variants/{target}_consensus.vcf.gz", name=sample_name, target=target),
+        expand("{name}/variants/{target}_d.vcf.gz", name=sample_name, target="1"),
         expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_name, target=target),
-
-
 
 rule copy_bed:
     input:
@@ -137,8 +136,8 @@ rule map_1d:
         read_number = subset_reads,
         minimap2_param = minimap2_param
     output:
-        BAM = "{name}/align/1d.bam",
-        BAI = "{name}/align/1d.bam.bai"
+        BAM = "{name}/align/1_d.bam",
+        BAI = "{name}/align/1_d.bam.bai"
     threads: 30
     shell:
         """
@@ -149,7 +148,7 @@ rule map_1d:
 # Split reads by amplicons
 rule split_reads:
     input:
-        "{name}/align/1d.bam"
+        "{name}/align/1_d.bam"
     output:
         DIR = directory("{name}/fasta_filtered/"),
         STATS = "{name}/stats/umi_filter_reads_stats.txt"
