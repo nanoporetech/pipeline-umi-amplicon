@@ -30,20 +30,21 @@ The following software packages must be installed prior to running:
 After installing miniconda3, install the pipeline as follows:
 ```bash
 # Get pipeline
-$ git clone https://github.com/nanoporetech/pipeline-umi-amplicon.git 
+# git clone https://github.com/nanoporetech/pipeline-umi-amplicon.git 
+git clone https://github.com/SemiQuant/pipeline-umi-amplicon.git
 # Change to directory
-$ cd pipeline-umi-amplicon
+cd pipeline-umi-amplicon
 # Create conda environment with all dependencies
-$ conda env create -f environment.yml
+conda env create -f environment.yml
 # Activate environment
-$ conda activate pipeline-umi-amplicon
+conda activate pipeline-umi-amplicon
 # Install python packages provided by pipeline-umi-amplicon
-$ cd lib && pip install . && cd ..
+cd lib && pip install . && cd ..
 
 # To test if the installation was successful run
-$ snakemake -j 1 -pr --configfile config.yml
+snakemake -j 1 -pr --configfile config.yml
 # Deactivate environment
-$ conda deactivate
+conda deactivate
 ```
 
 ### Input
@@ -53,8 +54,8 @@ To run the pipeline the following input files are required:
 | Input | Description |
 |-------|-------------|
 | Reference genome | FASTA file containing the reference genome (e.g. GRCh38 for human) |
-| Nanopore reads| Folder containing FASTQ files or a single concatenated FASTQ file. Reads should be **q-score filtered**|
-| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons|
+| Nanopore reads | Folder containing FASTQ files or a single concatenated FASTQ file. |
+| Targets / Amplicons | A BED file containing the chromosome, start and end coordinate and the name of all amplicons |
 
 # BED format
 Tab separated and needs a unique name:
@@ -140,3 +141,16 @@ implemented by forking and pull requests. However much as we would like to
 rectify every issue and piece of feedback users may have, the developers may
 have limited resource for support of this software. Research releases may be
 unstable and subject to rapid iteration by Oxford Nanopore Technologies.
+
+
+### TODO
+
+- Number of reads collapsed in the header of the bam file
+- Check that balance reads is working as its meant to
+- Add handling of errors if no reads aligned to a reference
+- Add stats output and plots, number of umis, umi distribution, snps plot umi vs raw, read alignment stats
+
+Done
+- I added a fastq filter options (min read length and average quality) using filtlong
+- The user can also now pass options to the variant calling using the config file
+- It runs as before when in defaults mode

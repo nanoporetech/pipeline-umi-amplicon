@@ -5,12 +5,7 @@ import edlib
 import pysam
 import sys
 from tqdm import tqdm
-
-
-def rev_comp(seq):
-    complement = {"A": "T", "C": "G", "G": "C", "T": "A"}
-    return "".join(complement.get(base, base) for base in reversed(seq))
-
+from Bio.Seq import Seq
 
 def str2bool(v):
     if v.lower() in ("yes", "true", "t", "y", "1"):
@@ -188,7 +183,7 @@ def detect_read_strand(read_5p_seq, upstream_context_fwd, upstream_context_rev):
 def combine_umis(seq_5p, seq_3p, strand):
     seq = seq_5p + seq_3p
     if strand != "+":
-        seq = rev_comp(seq_3p) + rev_comp(seq_5p)
+        seq = str(Seq(seq).reverse_complement())
     return seq
 
 

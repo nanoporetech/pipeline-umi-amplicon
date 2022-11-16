@@ -45,6 +45,10 @@ fwd_umi = config.get("fwd_umi", "TTTVVVVTTVVVVTTVVVVTTVVVVTTT")
 rev_umi = config.get("rev_umi", "AAABBBBAABBBBAABBBBAABBBBAAA")
 min_length = config.get("min_length", 40)
 max_length = config.get("max_length", 60)
+filter_reads = config.get("filter_reads", False)
+min_read_len = config.get("min_read_len", 100)
+min_mean_qual = config.get("min_mean_qual", 70)
+varscan_params = config.get("varscan_params", '--variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq 0.01 --strand-filter 0 --p-value 1 --min-reads2 2')
 
 ########################
 ########################
@@ -81,8 +85,9 @@ rule all:
         expand("{name}/align/{target}_final.bam.bai", name=sample_name, target=target),
         expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_name, target=target), 
         expand("{name}/variants/{target}_final.vcf.gz", name=sample_name, target=target),
+        expand("{name}/variants/{target}_consensus.vcf.gz", name=sample_name, target=target),
+        expand("{name}/variants/{target}_d.vcf.gz", name=sample_name, target="1"),
         expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_name, target=target),
-
 
 rule copy_bed:
     input:
@@ -92,26 +97,58 @@ rule copy_bed:
     shell:
         "cp {input} {output}"
 
+rule filter_reads:
+    input:
+        FQ = input_folder
+    params:
+        min_read_len = min_read_len,
+        min_mean_qual = min_mean_qual,
+        filter_reads = filter_reads
+    output:
+        FQ = "{name}/read.filt.fastq.gz",
+        STATS = "{name}/stats/reads_stats.txt"
+    threads: 1
+    shell:
+        """
+        printf 'Total reads in file pre filtering: ' 2>&1 | tee {output.STATS}
+        if [[ {input.FQ} =~ \.gz$ ]]
+        then
+            zcat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        else
+            cat {input.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        fi
+        
+        if [[ {params.filter_reads} == "True" ]]
+        then
+            filtlong --min_length {params.min_read_len} --min_mean_q {params.min_mean_qual} {input.FQ} | gzip > {output.FQ}
+            printf 'Total reads in file post filtering: ' 2>&1 | tee {output.STATS}
+            zcat {output.FQ} | echo $((`wc -l`/4)) 2>&1 | tee {output.STATS}
+        else
+            cp {input.FQ} {output.FQ}
+        fi
+        """
 
 rule map_1d:
     input:
-        FQ = input_folder,
+        FQ = "{name}/read.filt.fastq.gz",
         REF = reference_fasta
     params:
         read_number = subset_reads,
         minimap2_param = minimap2_param
     output:
-        BAM = "{name}/align/1d.bam",
-        BAI = "{name}/align/1d.bam.bai"
+        BAM = "{name}/align/1_d.bam",
+        BAI = "{name}/align/1_d.bam.bai"
     threads: 30
     shell:
-        "catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}"
-
+        """
+        catfishq --max_n {params.read_number} {input.FQ} | minimap2 {params.minimap2_param} -t {threads} {input.REF} - | samtools sort -@ 5 -o {output.BAM} - && samtools index -@ {threads} {output.BAM}
+        rm {input.FQ} #because this is a copy now
+        """
 
 # Split reads by amplicons
 rule split_reads:
     input:
-        "{name}/align/1d.bam"
+        "{name}/align/1_d.bam"
     output:
         DIR = directory("{name}/fasta_filtered/"),
         STATS = "{name}/stats/umi_filter_reads_stats.txt"
@@ -183,7 +220,8 @@ rule cluster:
         max_length = max_length
     threads: 10
     shell:
-        "mkdir -p {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 --qmask none -id 0.85"
+        "mkdir -p {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 -id 0.85"
+
 
 
 rule cluster_consensus:
@@ -197,8 +235,7 @@ rule cluster_consensus:
         max_length = max_length
     threads: 10
     shell:
-        " mkdir -p {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 --qmask none -id 0.85"
-
+        " mkdir -p {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 -id 0.85"
 
 rule reformat_consensus_clusters:
     input:
@@ -251,9 +288,9 @@ rule call_variants:
     output:
         "{name}/variants/{target}_{type}.vcf"
     params:
-        min_freq = 0.01
+        varscan_params = varscan_params
     shell:
-        "samtools mpileup -q 0 -Q 0 -B -d 10000000 -A -f {input.REF} {input.BAM} | varscan mpileup2cns --variants 1 --output-vcf 1 --min-coverage 8 --min-avg-qual 0 --min-var-freq {params.min_freq} --strand-filter 0 --p-value 1 --min-reads2 2 > {output}"
+        "samtools mpileup -q 0 -Q 0 -B -d 10000000 -A -f {input.REF} {input.BAM} | varscan mpileup2cns {params.varscan_params} > {output}"
 
 rule index_variants:
     input:
