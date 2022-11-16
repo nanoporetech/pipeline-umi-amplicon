@@ -75,7 +75,7 @@ rule reads:
         expand("{name}/stats/{target}_vsearch_cluster_stats.tsv", name=sample_name, target=target),
         expand("{name}/stats/{target}_consensus_size_vs_acc.tsv", name=sample_name, target=target)
 
-rule varaints:
+rule variants:
     input:
         expand("{name}/variants/{target}_final.vcf.gz", name=sample_name, target=target)
 
@@ -223,6 +223,7 @@ rule cluster:
         "mkdir -p {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 -id 0.85"
 
 
+
 rule cluster_consensus:
     input: "{name}/fasta_umi/{target}_detected_umis_final.fasta"
     output:
@@ -235,7 +236,6 @@ rule cluster_consensus:
     threads: 10
     shell:
         " mkdir -p {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters && vsearch --clusterout_id --clusters {wildcards.name}/clustering_consensus/{wildcards.target}/vsearch_clusters/test --centroids {output.CENT} --consout {output.CONS} --minseqlength {params.min_length} --maxseqlength {params.max_length} --qmask none --threads {threads} --cluster_fast {input} --clusterout_sort --gapopen 0E/5I --gapext 0E/2I --mismatch -8 --match 6 --iddef 0 --minwordmatches 0 -id 0.85"
-
 
 rule reformat_consensus_clusters:
     input:
