@@ -132,7 +132,7 @@ def filter_reads(args):
     logging.info("Reads found: {}".format(n_total))
     unmapped_perc = 0
     if n_total:
-        unmapped_perc = int(100.0 * unmapped_perc / n_total)
+        unmapped_perc = int(100.0 * n_unmapped / n_total)
 
     logging.info("Reads unmapped: {} ({}%)".format(n_unmapped, unmapped_perc))
 
