@@ -276,7 +276,7 @@ rule polish_clusters:
     shell:
         """
         rm -rf {output.FOLDER}
-        medaka smolecule --threads {threads} --length 50 --depth 2 --model {params.medaka_model} --method spoa {input.I2} {output.FOLDER} 2> {output.BAM}_smolecule.log
+        medaka smolecule --threads {threads} --length 50 --depth 2 --model {params.medaka_model} --method spoa {output.FOLDER} {input.I2} 2> {output.BAM}_smolecule.log
         cp {output.FOLDER}/consensus.fasta {output.F}
         cp {output.FOLDER}/subreads_to_spoa.bam {output.BAM} && cp {output.FOLDER}/subreads_to_spoa.bam.bai {output.BAM}.bai
         """
